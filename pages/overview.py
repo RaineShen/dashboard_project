@@ -1,19 +1,103 @@
-# **Wine Vision App** <img src="src/assets/logo.png" width="85" height="45" /> 
-***Discover the physiochemical secrets to what makes a wine wonderful...***
+import numpy as np
+import pandas as pd
+import altair as alt
+import pathlib
 
-*You can visit the app directly by clicking here* &rarr; &rarr; &rarr; [***Wine Vision***](https://wine-vision.herokuapp.com/)
+import dash_core_components as dcc
+import dash_html_components as html
+import dash_bootstrap_components as dbc
 
-![insert app screenshot here :)]()
+from utils import Header, make_dash_table
 
+
+# Allow large data set
+
+alt.data_transformers.enable('data_server')
+
+# Get data
+wine = pd.read_csv("data/processed/wine_quality.csv")
+
+corr_df = pd.read_csv("data/processed/correlation.csv")
+
+# Get a list of unique column names
+variables = corr_df["level_0"].unique()
+variables = np.delete(variables, np.argwhere(variables == "Quality Factor"))
+# Don't want this as an option in scatterplot
+variables = np.delete(variables, np.argwhere(
+    variables == "Quality Factor Numeric"))
+
+
+# Matrix plot. I couldn't figure out how to make it work at the bottom without a callback input
+def plot_matrix():
+    click = alt.selection_multi(fields=['type'], bind='legend')
+    chart = alt.Chart(corr_df, title="Correlation Plot for Numeric Features").mark_square().encode(
+        color=alt.Color('type', scale=alt.Scale(domain=['red', 'white'],
+                                                range=['darkred', 'blue'])),
+        x='level_0',
+        y='level_1',
+        size='abs',
+        opacity=alt.condition(click, alt.value(0.7), alt.value(0)),
+        tooltip=["type", "corr"]
+    ).configure_title(fontSize=18).properties(height=250, width=250).add_selection(click)
+    return chart.to_html()
+
+
+def create_layout(app):
+    # Page layouts
+    layout = html.Div(
+        [html.Div([Header(app)]),
+
+
+            # page 1
+            html.Div(
+                [  # Row 3
+                    html.Div(
+
+                        [html.H3('Motivation'),
+                            # html.Br([]),
+                            html.H6(
+                                "\
+                                    Wine is a multi billion dollar global industry. \
+                                With 36 billion bottles of wine produced each year 1,producers are constantly looking for ways to outperform \
+                                the competition and create the best wines they can. \
+                                Portugal in particular is second in the world for per-capita wine \
+                                consumption 2 and eleventh for wine production, creating over 600,000 \
+                                litres per year 3.Physicochemical components are fundamental to a wine’s quality \
+                                and those who understand this aspect of wine will have a greater edge into crafting an enjoyable \
+                                and profitable product.Wine quality evaluation is the main part of the certification process to \
+                                improve wine making. It is generally assessed by physicochemical tests and sensory analysis. \
+                                The relationship between physicochemical structure and subjective quality is complex. \
+                                No individual component can be used to accurately predict a wine’s quality, and interactions \
+                                are as important as the components themselves. For example, perhaps higher alcohol content only  \
+                                improves a wine within a certain range of sulphate content, and wines outside this range are made \
+                                worse by higher alcohol content. Trained wine tasting experts are able to reliably score wine on a \
+                                scale ranging from 0 (very bad) to 10 (excellent), and those scores can be used to determine how these \
+                                physicochemical properties affect quality.Our interactive dashboard will allow users to explore a number \
+                                of physicochemical variables and how they interact to determine the subjective quality of a wine. \
+                                Our visualizations will allow users to test and discover for themselves these relationships. \
+                                Wine producers, wine enthusiasts, and curious individuals can all make use of this dashboard.",
+                            style={'color': "#FFFFFF"},
+                            className="row",
+                        ),
+                        ],
+                        className="product"
+                    ),
+
+
+
+                ],
+
+            className="twelve columns"),
+            html.Div(
+         dcc.Markdown('''
 ## Welcome!
-:confetti_ball::balloon::confetti_ball::balloon: Hello and thank you for stopping by the [Wine Vision App](https://wine-vision.herokuapp.com/)! :confetti_ball::balloon::confetti_ball::balloon:
+ Hello and thank you for stopping by the [Wine Vision App](https://wine-vision.herokuapp.com/)! :confetti_ball::balloon::confetti_ball::balloon:
 
 This page is our homebase providing you information on the project. 
 Navigate directly to a section of your choice or scroll down to find out more.
 
-* [What are we doing? (And why?)](#what-are-we-doing)
-* [Describing the App](#app-description)
-* [App Sketch](#app-sketch)
+
+* [Describing the App]\n (/app-description)
 * [Describing the Data](#the-data)
 * [A Fun Usage Scenario](#a-fun-usage-scenario)
 * [So who are we?](#who-are-we)
@@ -23,7 +107,6 @@ Navigate directly to a section of your choice or scroll down to find out more.
 
 ![GIF](https://media1.giphy.com/media/lNWY2wwQx21NoXwBGF/giphy.gif)
 
-## What are we doing?
 ### The problem
 Wine making has always been a traditional practice passed down for many generations; yet, some of wine's secrets are still a mystery to most people, even wine producers! So how are we supposed to craft the perfect wine without knowing what makes it perfect (speaking from both a consumer and business perspective)?
 
@@ -32,7 +115,7 @@ In general, wine quality evaluation is assessed by physicochemical tests and sen
 From a business perspective, producers are constantly looking for ways to outperform the competition by creating the best wine they can. Those who understand the fundamental physiochemical aspects of wine will have a greater edge into crafting an enjoyable and profitable product. So, we introduce to you the *Wine Vision Dashboard*.
 
 ### The solution
-**Our interactive dashboard will allow users to explore a number of physicochemical variables and how they interact to determine the subjective quality of a wine. Our visualizations will allow users to test and discover for themselves these relationships.** Wine producers, wine enthusiasts, and curious individuals can all make use of this dashboard.
+**Our interactive dashboard will allow users to explore how a number of physicochemical variables interact and determine the subjective quality of a wine. Wine producers, wine enthusiasts, and curious individuals can all make use of this dashboard to discover these elusive relationships.** 
 
 ![Wine chemistry](https://d2cbg94ubxgsnp.cloudfront.net/Pictures/480x270//9/2/5/139925_160412_PRS_AWRI_GAGO_0262.jpg)
 
@@ -51,8 +134,7 @@ The Explore the Dataset tab will focus on descriptive data analysis, allowing us
 Lastly, the Machine learning tab will focus on modelling and machine learning techniques. This section will be primitive in the early stage of the project, and will likely just include simple linear regression for now. We plan to expand this section when we do the project in R.
 
 
-## App Sketch
-![App Sketch](app_sketch.png)
+
 
 ## The Data
 Portugal is second in the world for per-capita wine consumption [2](https://www.nationmaster.com/nmx/ranking/wine-consumption-per-capita) and eleventh for wine production [3](https://en.wikipedia.org/wiki/List_of_wine-producing_regions), so by no coincidence we built our dashboard on the famous Portuguese wine quality data set from Cortez et al., 2009. 
@@ -86,3 +168,11 @@ If you want to report a problem or suggest an enhancement we'd love for you to [
 Paulo Cortez, University of Minho, Guimarães, Portugal, http://www3.dsi.uminho.pt/pcortez
 A. Cerdeira, F. Almeida, T. Matos and J. Reis, Viticulture Commission of the Vinho Verde Region(CVRVV), Porto, Portugal
 @2009
+'''),
+         style={"font-size": "1.825rem"}
+         )
+
+
+         ]
+    )
+    return layout
