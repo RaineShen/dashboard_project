@@ -13,7 +13,7 @@ from utils import Header, make_dash_table
 
 # Allow large data set
 
-alt.data_transformers.enable('data_server')
+# alt.data_transformers.enable('data_server')
 
 # Get data
 wine = pd.read_csv("data/processed/wine_quality.csv")
