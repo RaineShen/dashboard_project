@@ -7,18 +7,20 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from altair_data_server import data_server
+# from altair_data_server import data_server
 
 from utils import Header, make_dash_table
 
 
 # Allow large data set
-alt.data_transformers.enable('data_server')
+# alt.data_transformers.enable('data_server')
 
 # Get data
 wine = pd.read_csv("data/processed/wine_quality.csv")
 
 corr_df = pd.read_csv("data/processed/correlation.csv")
+
+wine = pd.concat([wine.loc[wine["Wine"] == "red"], wine.loc[wine["Wine"] == "white"].sample(3300)])
 
 # Get a list of unique column names
 variables = corr_df["level_0"].unique()
