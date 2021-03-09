@@ -12,10 +12,11 @@ from utils import Header, make_dash_table
 
 
 # alt.data_transformers.enable('data_server')
+alt.data_transformers.disable_max_rows()
 
 wine = pd.read_csv("data/processed/wine_quality.csv")
 
-wine = pd.concat([wine.loc[wine["Wine"] == "red"], wine.loc[wine["Wine"] == "white"].sample(3300)])
+# wine = pd.concat([wine.loc[wine["Wine"] == "red"], wine.loc[wine["Wine"] == "white"].sample(3300)])
 
 
 def create_layout(app):
@@ -27,8 +28,8 @@ def create_layout(app):
              dbc.Row([
                  dbc.Col([
                      dbc.Card(
-                         dbc.CardBody(html.H3('Wine Type')),
-                         color='info'),
+                         dbc.CardBody(html.H4('Wine Type')),
+                         color='warning', inverse=True),
 
                      dcc.Checklist(
                          id="winetype",

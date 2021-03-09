@@ -20,7 +20,7 @@ from pages import (
 wine = pd.read_csv("data/processed/wine_quality.csv")
 corr_df = pd.read_csv("data/processed/correlation.csv")
 
-wine = pd.concat([wine.loc[wine["Wine"] == "red"], wine.loc[wine["Wine"] == "white"].sample(3300)])
+# wine = pd.concat([wine.loc[wine["Wine"] == "red"], wine.loc[wine["Wine"] == "white"].sample(3300)])
 
 # Get a list of unique column names
 variables = corr_df["level_0"].unique()
@@ -31,6 +31,7 @@ variables = np.delete(variables, np.argwhere(variables == "Quality Factor Numeri
 # Allow large data set
 # from altair_data_server import data_server 
 # alt.data_transformers.enable('data_server')
+alt.data_transformers.disable_max_rows()
 
 app = dash.Dash(
     __name__, meta_tags=[
